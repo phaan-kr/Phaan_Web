@@ -1,0 +1,202 @@
+## Workaround for http://jira.atlassian.com/browse/JRA-23563
+#set($field="")
+
+<input type="hidden" id ="varExecute" name="varExecute">
+<input type="hidden" id="count" name="count" value="1">
+<input type="hidden" id="irisProjectKey" name="irisProjectKey" value="$!irisProjectKey">	
+<input type="hidden" name="projectId" value="$projectId" /> 	 
+#controlHeader($action 'projectName' $i18n.getText("codegoverning.repository.projectName") true $displayParameters.noHeader)
+<input type="text" id="projectName" name="projectName" #if ($projectName) value="$projectName" #end />
+
+#controlHeader($action 'monitoringId' $i18n.getText("codegoverning.repository.monitoringType") true $displayParameters.noHeader)
+<select id="monitoringId" name="monitoringId" style="width:200px;" >
+		<option value=1 #if($monitoringId==1) selected="selected" #end>Compare Branches</option>
+		<option value=2 #if($monitoringId==2) selected="selected" #end>Compare Branches With IRIS Issues</option>
+		<option value=3 #if($monitoringId==3) selected="selected" #end>Compare Branches with Tag</option>
+		<option value=4 #if($monitoringId==4) selected="selected" #end>Compare Branches with Files/Folders</option>
+		<option value=5 #if($monitoringId==5) selected="selected" #end>Compare Commits with Branches</option>
+		<option value=6 #if($monitoringId==6) selected="selected" #end>Verify Modification</option>
+		<option value=7 #if($monitoringId==7) selected="selected" #end>Daily Created Commits</option>
+</select>
+
+<tr>
+	<td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.baseRepository")</b></td>
+	<td bgcolor=f0f0f0><b><a href=javascript:openWindows('$requestContext.baseUrl/secure/popups/SelectCodeGoverningRepository.jspa?type="base"&irisProjectKey=$irisProjectKey') >Select BaseRepository</a></b></td>
+</tr>
+<tr id="baseRepoParams">
+#controlHeader($action 'baseRepositoryName' $i18n.getText("codegoverning.repository.baseRepository") true $displayParameters.noHeader)
+<input type="text" id="baseRepositoryName" name="baseRepositoryName" #if ($baseRepositoryName) value="$baseRepositoryName" #end  />
+
+#controlHeader($action 'targetBranchName' $i18n.getText("codegoverning.repository.baseBranchName") true $displayParameters.noHeader)
+<input type="text" id="baseBranchName" name="baseBranchName" #if ($baseBranchName) value="$baseBranchName" #end/>
+
+#controlHeader($action 'baseFetchUrl' $i18n.getText("codegoverning.repository.baseFetchUrl") true $displayParameters.noHeader)
+<input type="text" id="baseFetchUrl" name="baseFetchUrl" #if ($baseFetchUrl) value="$baseFetchUrl" #end size="90"/>
+
+#controlHeader($action 'baseLocalPath' $i18n.getText("codegoverning.repository.baseLocalPath") true $displayParameters.noHeader)
+<input type="text" id="baseLocalPath" name="baseLocalPath" #if ($baseLocalPath) value="$baseLocalPath" #end size="90"/>
+
+#controlHeader($action 'baseGitWebUrl' $i18n.getText("codegoverning.repository.baseGitWebUrl") true $displayParameters.noHeader)
+<input type="text" id="baseGitWebUrl" name="baseGitWebUrl" #if ($baseGitWebUrl) value="$baseGitWebUrl" #end size="90"/>
+
+#controlHeader($action 'baseGerritUrl' $i18n.getText("codegoverning.repository.baseGerritUrl") true $displayParameters.noHeader)
+<input type="text" id="baseGerritUrl" name="baseGerritUrl" #if ($baseGerritUrl) value="$baseGerritUrl" #end size="90"/>
+</tr>
+<tr>
+	<td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.targetRepository")</b></td>
+	<td bgcolor=f0f0f0><b><a href=javascript:openWindows('$requestContext.baseUrl/secure/popups/SelectCodeGoverningRepository.jspa?type="target"&irisProjectKey=$irisProjectKey') >Select TargetRepository</a></b><br/>
+							<b><a href='$requestContext.baseUrl/secure/popups/AddCodeGoverningRepository.jspa' onclick="createTarget(); return false;">Select More Repository</a></b></td>
+</tr>
+
+#controlHeader($action 'targetRepositoryName' $i18n.getText("codegoverning.repository.targetRepository") true $displayParameters.noHeader)
+<input type="text" id="targetRepositoryName" name="targetRepositoryName" #if ($targetRepositoryName) value="$targetRepositoryName" #end />
+
+#controlHeader($action 'targetBranchName' $i18n.getText("codegoverning.repository.targetBranchName") true $displayParameters.noHeader)
+<input type="text" id="targetBranchName" name="targetBranchName" #if ($targetBranchName) value="$targetBranchName" #end/>
+
+#controlHeader($action 'targetFetchUrl' $i18n.getText("codegoverning.repository.targetFetchUrl") true $displayParameters.noHeader)
+<input type="text" id="targetFetchUrl" name="targetFetchUrl" #if ($targetFetchUrl) value="$targetFetchUrl" #end size="90"/>
+
+#controlHeader($action 'targetLocalPath' $i18n.getText("codegoverning.repository.targetLocalPath") true $displayParameters.noHeader)
+<input type="text" id="targetLocalPath" name="targetLocalPath" #if ($targetLocalPath) value="$targetLocalPath" #end size="90"/>
+
+#controlHeader($action 'targetGitWebUrl' $i18n.getText("codegoverning.repository.targetGitWebUrl") true $displayParameters.noHeader)
+<input type="text" id="targetGitWebUrl" name="targetGitWebUrl" #if ($targetGitWebUrl) value="$targetGitWebUrl" #end size="90"/>
+
+#controlHeader($action 'targetGerritUrl' $i18n.getText("codegoverning.repository.targetGerritUrl") true $displayParameters.noHeader)
+<input type="text" id="targetGerritUrl" name="targetGerritUrl" #if ($targetGerritUrl) value="$targetGerritUrl" #end size="90"/>
+
+<tbody id="target">
+#set($count=1)
+#set($additionalTargetSize = $targetRepositories.size()-$count)##Ï≤´Î≤àÏß?target?Ä Ï∂úÎ†•?òÏóà?ºÎ?Î°??úÏô∏
+#if($additionalTargetSize>0)
+	#foreach($count in [1..$additionalTargetSize])
+		#set($addTargetName = "targetRepositoryName$count")
+		#set($addTargetUrl = "targetFetchUrl$count")
+		#set($addTargetBranchName = "targetBranchName$count")
+		#set($addTargetLocalPath = "targetLocalPath$count")
+		#set($addTargetGitWebUrl = "addTargetGitWebUrl$count")
+		#set($addTargetGerritUrl = "addTargetGerritUrl$count")
+		<tr>
+		<td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.targetRepository")</b></td>
+		</tr>
+		<tr>
+			<td align="right"><em>$i18n.getText("codegoverning.repository.targetRepository")<em></td>
+			<td><input type="text" id="$addTargetName" name="$addTargetName" value="$!targetRepositories.get($count).getRepositoryName()"/></td>
+		</tr>
+		
+		<tr>
+			<td align="right"><em>$i18n.getText("codegoverning.repository.targetBranchName")</em></td>
+			<td><input type="text" id="$addTargetBranchName" name="$addTargetBranchName" value="$!targetRepositories.get($count).getBranchName()"/></td>
+		</tr>
+		
+		<tr>
+			<td align="right"><em>$i18n.getText("codegoverning.repository.targetFetchUrl")</em></td>
+			<td><input type="text" id="$addTargetUrl" name="$addTargetUrl" value="$!targetRepositories.get($count).getFetchUrl()" size="90"/></td>
+		</tr>
+		
+		<tr>this.html("test");
+			<td align="right"><em>$i18n.getText("codegoverning.repository.targetLocalPath")</em></td>
+			<td><input type="text" id="$addTargetLocalPath" name="$addTargetLocalPath" value="$!targetRepositories.get($count).getLocalPath()" size="90"/></td>
+		</tr>
+		
+		<tr>
+			<td align="right"><em>$i18n.getText("codegoverning.repository.targetGitWebUrl")</em></td>
+			<td><input type="text" id="$addTargetGitWebUrl" name="$addTargetGitWebUrl" value="$!targetRepositories.get($count).getGitWebUrl()" size="90"/></td>
+		</tr>
+		
+		<tr>
+			<td align="right"><em>$i18n.getText("codegoverning.repository.targetGerritUrl")</em></td>
+			<td><input type="text" id="$addTargetGerritUrl" name="$addTargetGerritUrl" value="$!targetRepositories.get($count).getGerritUrl()" size="90"/></td>
+		</tr>
+	#end
+#end
+</tbody>
+
+<script type="text/javascript">
+		
+	function createTarget()
+	{
+
+		var count = parseInt(document.getElementById("count").value);
+		var index = count - 1;
+		var targetDiv = "targetDiv"+count;
+		var targetName = "targetRepositoryName"+count;
+		var targetUrl = "targetFetchUrl"+count;
+		var targetBranchName = "targetBranchName"+count;
+		var targetLocalPath = "targetLocalPath"+count;
+		var targetGitWebUrl = "targetGitWebUrl"+count;
+		var targetGerritUrl = "targetGerritUrl"+count;
+		
+		AJS.$("#target").append('<div class="targetDiv" id = "'+index+'"></div>');
+		AJS.$("#target").append('<tr><td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.targetRepository")</b></td>'
+//		+'<td><b><a href=javascript:openWindows("$requestContext.baseUrl/secure/popups/SelectCodeGoverningRepository.jspa?type=target&irisProjectKey=$irisProjectKey") >Select TargetRepository</a></b></td><br/>'
+//		+'<b><a href="$requestContext.baseUrl/secure/popups/AddCodeGoverningRepository.jspa" onclick="removeTarget("'+index+'"); return false;">Delete</a></b></td></tr>'
+		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetRepository")<em></td><td><input type="text" id="'+targetName+'" name="'+targetName+'"/></td></tr>'
+		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetBranchName")</em><td><input type="text" id="'+targetBranchName+'" name="'+targetBranchName+'"/></tr>'
+		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetFetchUrl")</em><td><input type="text" id="'+targetUrl+'" name="'+targetUrl+'" size="90"/></tr>'
+		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetLocalPath")</em><td><input type="text" id="'+targetLocalPath+'" name="'+targetLocalPath+'"size="90"/></tr>'
+		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetGitWebUrl")</em><td><input type="text" id="'+targetGitWebUrl+'" name="'+targetGitWebUrl+'"size="90"/></tr>'
+		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetGerritUrl")</em><td><input type="text" id="'+targetGerritUrl+'" name="'+targetGerritUrl+'"size="90"/></tr>');
+
+		document.getElementById("count").value = count+1;
+	}
+	
+	var openWindows = function(url)
+	{
+	    var popWin = window.open(url, 'pop', 'status=no,resizable=yes,top=100,left=200,width=500, height=380, scrollbars=yes');
+	    popWin.opener = self;
+	    popWin.focus();
+	}
+	
+	function removeTarget(index)
+	{
+		alert(index);
+		##AJS.$("#target").find(".targetDiv")[index].remove();//id??count ?Ä?•ÌïòÍ≥? idÎ•??£ÏùÑ ???àÎèÑÎ°?
+		document.removeChild(document.getElementsByClassName("targetDiv")[index]);//ÎßàÏ∞¨Í∞ÄÏßÄÎ°?refresh?úÎã§.
+		document.getElementById("count").value = count-1;
+	}
+
+	
+	function getBaseParams(params)
+	{	
+		params = params.split(",");
+		document.getElementById("baseRepositoryName").value=params[1];
+		document.getElementById("baseBranchName").value=params[2];
+		document.getElementById("baseFetchUrl").value=params[3];
+		document.getElementById("baseLocalPath").value=params[4];
+		document.getElementById("baseGitWebUrl").value=params[5];
+		document.getElementById("baseGerritUrl").value=params[6];
+	}
+
+	function getTargetParams(params)
+	{	
+		alert(AJS.$("#count").val());
+		
+		if(AJS.$("#count").val()==1)
+		{
+			params1 = params[0].split(",");
+			document.getElementById("targetRepositoryName").value=params1[1];
+			document.getElementById("targetBranchName").value=params1[2];
+			document.getElementById("targetFetchUrl").value=params1[3];
+			document.getElementById("targetLocalPath").value=params1[4];
+			document.getElementById("targetGitWebUrl").value=params1[5];
+			document.getElementById("targetGerritUrl").value=params1[6];-1
+		}
+			
+		for(i=1; i<params.length; i++)
+		{
+			createTarget();
+			
+			params1 = params[i].split(",");
+			document.getElementById("targetRepositoryName"+AJS.$("#count").val()).value=params1[1];
+			document.getElementById("targetBranchName"+AJS.$("#count").val()).value=params1[2];
+			document.getElementById("targetFetchUrl"+AJS.$("#count").val()).value=params1[3];
+			document.getElementById("targetLocalPath"+AJS.$("#count").val()).value=params1[4];
+			document.getElementById("targetGitWebUrl"+AJS.$("#count").val()).value=params1[5];
+			document.getElementById("targetGerritUrl"+AJS.$("#count").val()).value=params1[6];
+			
+			alert(AJS.$("#count").val());
+		}	
+	}
+</script>
