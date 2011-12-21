@@ -3,6 +3,7 @@
 
 <input type="hidden" id ="varExecute" name="varExecute">
 <input type="hidden" id="count" name="count" value="1">
+<input type="hidden" id="createdTargets" name="createdTargets" value="0">
 <input type="hidden" id="irisProjectKey" name="irisProjectKey" value="$!irisProjectKey">	
 <input type="hidden" name="projectId" value="$projectId" /> 	 
 #controlHeader($action 'projectName' $i18n.getText("codegoverning.repository.projectName") true $displayParameters.noHeader)
@@ -45,7 +46,7 @@
 <tr>
 	<td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.targetRepository")</b></td>
 	<td bgcolor=f0f0f0><b><a href=javascript:openWindows('$requestContext.baseUrl/secure/popups/SelectCodeGoverningRepository.jspa?type="target"&irisProjectKey=$irisProjectKey') >Select TargetRepository</a></b><br/>
-							<b><a href='$requestContext.baseUrl/secure/popups/AddCodeGoverningRepository.jspa' onclick="createTarget(); return false;">Select More Repository</a></b></td>
+							<b><a href='$requestContext.baseUrl/secure/popups/AddCodeGoverningRepository.jspa' onclick="createTarget(); return false;">Add More Repository</a></b></td>
 </tr>
 
 #controlHeader($action 'targetRepositoryName' $i18n.getText("codegoverning.repository.targetRepository") true $displayParameters.noHeader)
@@ -128,10 +129,9 @@
 		var targetGitWebUrl = "targetGitWebUrl"+count;
 		var targetGerritUrl = "targetGerritUrl"+count;
 		
-		AJS.$("#target").append('<div class="targetDiv" id = "'+index+'"></div>');
-		AJS.$("#target").append('<tr><td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.targetRepository")</b></td>'
-//		+'<td><b><a href=javascript:openWindows("$requestContext.baseUrl/secure/popups/SelectCodeGoverningRepository.jspa?type=target&irisProjectKey=$irisProjectKey") >Select TargetRepository</a></b></td><br/>'
-//		+'<b><a href="$requestContext.baseUrl/secure/popups/AddCodeGoverningRepository.jspa" onclick="removeTarget("'+index+'"); return false;">Delete</a></b></td></tr>'
+##		AJS.$("#target").append('<div class="targetDiv" id = "'+index+'"></div>');
+		AJS.$("#target").append('<tr><td bgcolor=f0f0f0><b>$i18n.getText("codegoverning.repository.targetRepository")</b></td></tr>'
+##		+'<b><a href="$requestContext.baseUrl/secure/popups/AddCodeGoverningRepository.jspa" onclick="removeTarget("'+index+'"); return false;">Delete</a></b></td></tr>'
 		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetRepository")<em></td><td><input type="text" id="'+targetName+'" name="'+targetName+'"/></td></tr>'
 		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetBranchName")</em><td><input type="text" id="'+targetBranchName+'" name="'+targetBranchName+'"/></tr>'
 		+'<tr><td align="right"><em>$i18n.getText("codegoverning.repository.targetFetchUrl")</em><td><input type="text" id="'+targetUrl+'" name="'+targetUrl+'" size="90"/></tr>'
@@ -171,32 +171,51 @@
 
 	function getTargetParams(params)
 	{	
-		alert(AJS.$("#count").val());
-		
-		if(AJS.$("#count").val()==1)
+		if(AJS.$("#createdTargets").val()==0) //target???˜ë‚˜???¤ì •?˜ì? ?Šì? ê²½ìš°
 		{
+			alert("createdTargets.val==0");
 			params1 = params[0].split(",");
 			document.getElementById("targetRepositoryName").value=params1[1];
 			document.getElementById("targetBranchName").value=params1[2];
 			document.getElementById("targetFetchUrl").value=params1[3];
 			document.getElementById("targetLocalPath").value=params1[4];
 			document.getElementById("targetGitWebUrl").value=params1[5];
-			document.getElementById("targetGerritUrl").value=params1[6];-1
-		}
+			document.getElementById("targetGerritUrl").value=params1[6];
 			
-		for(i=1; i<params.length; i++)
+			AJS.$("#createdTargets").val(parseInt(AJS.$("#createdTargets").val())+1); //target??ëª‡ê°œê°€ ?¤ì •?˜ì—ˆ?”ì? ?€?? 
+																								//targetRepository??ê´€?¨ëœ id ì¶”ê??˜ê¸° ?„í•´
+			for(i=1; i<params.length; i++) 
+			{				
+				params1 = params[i].split(",");
+				setParams(params1);
+			}
+
+		}
+		else	
+		{
+			for(i=0; i<params.length; i++)
+			{
+				params1 = params[i].split(",");
+				setParams(params1);
+			}
+		}
+	}
+	
+	function setParams(params)
+	{
+		var counts = parseInt(AJS.$("#createdTargets").val());
+		if(AJS.$("#createdTargets").val()!=AJS.$("#count"))// count??targetRepositoryê°€ ?ì„±???«ìž
 		{
 			createTarget();
-			
-			params1 = params[i].split(",");
-			document.getElementById("targetRepositoryName"+AJS.$("#count").val()).value=params1[1];
-			document.getElementById("targetBranchName"+AJS.$("#count").val()).value=params1[2];
-			document.getElementById("targetFetchUrl"+AJS.$("#count").val()).value=params1[3];
-			document.getElementById("targetLocalPath"+AJS.$("#count").val()).value=params1[4];
-			document.getElementById("targetGitWebUrl"+AJS.$("#count").val()).value=params1[5];
-			document.getElementById("targetGerritUrl"+AJS.$("#count").val()).value=params1[6];
-			
-			alert(AJS.$("#count").val());
-		}	
+		}
+		
+		document.getElementById("targetRepositoryName"+counts).value=params1[1];
+		document.getElementById("targetBranchName"+counts).value=params1[2];
+		document.getElementById("targetFetchUrl"+counts).value=params1[3];
+		document.getElementById("targetLocalPath"+counts).value=params1[4];
+		document.getElementById("targetGitWebUrl"+counts).value=params1[5];
+		document.getElementById("targetGerritUrl"+counts).value=params1[6];
+		
+		AJS.$("#createdTargets").val(parseInt(AJS.$("#createdTargets").val())+1);
 	}
 </script>
